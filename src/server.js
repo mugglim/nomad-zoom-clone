@@ -19,6 +19,8 @@ const httpServer = http.createServer(app);
 const wsServer = SocketIO(httpServer);
 
 wsServer.on('connection', socket => {
+	socket['nickname'] = '익명';
+
 	socket.onAny(e => {
 		console.log(`Sockent Event: ${e}`);
 	});
@@ -27,18 +29,20 @@ wsServer.on('connection', socket => {
 	socket.on('enter_room', (roomName, done) => {
 		socket.join(roomName);
 		done();
-		socket.to(roomName).emit('welcome');
+		socket.to(roomName).emit('welcome', socket.nickname);
 	});
 
 	socket.on('new_message', (msg, roomName, done) => {
-		socket.to(roomName).emit('new_message', msg);
+		socket.to(roomName).emit('new_message', `${socket.nickname}: ${msg}`);
 		done();
 	});
 
 	// 클라이언트의 연결이 끊킬 때 감지할 수 있음.
 	socket.on('disconnecting', () => {
-		socket.rooms.forEach(roomId => socket.to(roomId).emit('exit_room'));
+		socket.rooms.forEach(roomId => socket.to(roomId).emit('exit_room', socket.nickname));
 	});
+
+	socket.on('nickname', nickname => (socket['nickname'] = nickname));
 });
 
 // http

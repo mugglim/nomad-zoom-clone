@@ -11,12 +11,18 @@ $room.hidden = true;
 
 function handleMessageSubmit(e) {
 	e.preventDefault();
-	const $input = $('input', $room);
+	const $input = $('#msg input', $room);
 	const { value } = $input;
 	socket.emit('new_message', $input.value, roomName, () => {
 		addMessage(`You : ${value}`);
 	});
 	$input.value = '';
+}
+
+function handleNicknameSubmit(e) {
+	e.preventDefault();
+	const $input = $('#nickname input', $room);
+	socket.emit('nickname', $input.value);
 }
 
 function showRoom() {
@@ -25,8 +31,11 @@ function showRoom() {
 	const $roomName = $('h3', $room);
 	$roomName.innerText = `Room: ${roomName}`;
 
-	const $form = $('form', $room);
-	$form.addEventListener('submit', handleMessageSubmit);
+	const $msgForm = $('form#msg', $room);
+	const $nicknameForm = $('form#nickname', $room);
+
+	$msgForm.addEventListener('submit', handleMessageSubmit);
+	$nicknameForm.addEventListener('submit', handleNicknameSubmit);
 }
 
 function handleRoomSubmit(e) {
@@ -48,12 +57,12 @@ function addMessage(message) {
 
 $form.addEventListener('submit', handleRoomSubmit);
 
-socket.on('welcome', () => {
-	addMessage('Someone is joined');
+socket.on('welcome', nickname => {
+	addMessage(`${nickname} is joined`);
 });
 
-socket.on('exit_room', () => {
-	addMessage('Someone left ㅠㅠ.');
+socket.on('exit_room', nickname => {
+	addMessage(`${nickname} left ㅠㅠ.`);
 });
 
 socket.on('new_message', addMessage);
