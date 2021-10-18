@@ -1,0 +1,6 @@
+#room #myStream {
+	display: flex;
+}
+#room video {
+	margin: 20px;
+}

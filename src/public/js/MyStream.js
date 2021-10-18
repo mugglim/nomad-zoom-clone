@@ -19,5 +19,9 @@ function MyStream(socket) {
 		);
 	};
 
+	this.toggleVideo = () => {
+		this.stream.getVideoTracks().forEach(track => (track.enabled = !track.enabled));
+	};
+
 	this.getTracks = () => this.stream.getTracks();
 }

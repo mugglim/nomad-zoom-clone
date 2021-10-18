@@ -6,6 +6,7 @@ const $welcome = $('#welcome');
 const $welcomeForm = $('form', $welcome);
 const $room = $('#room');
 const myStream = new MyStream(socket);
+const $videoToggleBtn = $('.videoToggleBtn');
 
 let myPeerConnection;
 let roomName;
@@ -40,8 +41,17 @@ async function handleWelcomeSubmit(e) {
 	$input.value = '';
 }
 
-$welcomeForm.addEventListener('submit', handleWelcomeSubmit);
+function handleToggleVideo() {
+	if (!myStream.stream) {
+		return;
+	}
+	myStream.toggleVideo();
+}
 
+$welcomeForm.addEventListener('submit', handleWelcomeSubmit);
+$videoToggleBtn.addEventListener('click', handleToggleVideo);
+
+// Socket =======================
 socket.on('welcome', async () => {
 	await myPeerConnection.sendOffer(roomName);
 });
