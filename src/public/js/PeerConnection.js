@@ -44,7 +44,6 @@ function PeerConnection(socket, $peerFace, stream) {
 	};
 
 	this.handleAddStream = data => {
-		console.log(this.stream, data.stream);
 		this.$peerFace.srcObject = data.stream;
 	};
 
