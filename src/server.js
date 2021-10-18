@@ -19,15 +19,20 @@ const server = http.createServer(app);
 // ws로 upgrade
 const wss = new WebSocket.Server({ server });
 
+const sockets = [];
+
 wss.on('connection', socket => {
+	sockets.push(socket);
+
+	// ✅ Connection
 	console.log('Conncted to Client ✅');
 
-	socket.send('Hello World :D');
-
+	// 🚀 In communication
 	socket.on('message', message => {
-		console.log(`From Clinet : ${message}`);
+		sockets.forEach(fooSokcet => fooSokcet.send(message.toString()));
 	});
 
+	// ⛔ Disconnection
 	socket.on('close', () => console.log('Disconncted to Client ⛔'));
 });
 
