@@ -95,7 +95,20 @@ function handlerCameraClick() {
 }
 
 async function handleAudioChange() {
+	// Change track on my stream
 	await getMedia($selectAudio.value);
+	// Change track on peer stream
+	if (myPeerConnection) {
+		// (2) [RTCRtpSender, RTCRtpSender]
+		const audioTrack = myStream.getAudioTracks()[0];
+		const audioSender = myPeerConnection
+			.getSenders()
+			.find(sender => sender.track.kind === 'audio');
+
+		// Sender : Peer로 보내진 media stream의 track을 컨트롤 할 수 있는 주체
+
+		audioSender.replaceTrack(audioTrack);
+	}
 }
 
 $muteBtn.addEventListener('click', handlerMuteClick);
