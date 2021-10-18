@@ -23,13 +23,25 @@ const sockets = [];
 
 wss.on('connection', socket => {
 	sockets.push(socket);
+	socket.nickname = '익명';
 
 	// ✅ Connection
 	console.log('Conncted to Client ✅');
 
 	// 🚀 In communication
 	socket.on('message', message => {
-		sockets.forEach(fooSokcet => fooSokcet.send(message.toString()));
+		const { type, payload } = JSON.parse(message);
+
+		switch (type) {
+			case 'new_message':
+				sockets.forEach(fooSokcet => fooSokcet.send(`${socket.nickname}: ${payload}`));
+				break;
+			case 'nickname':
+				socket.nickname = payload;
+				break;
+			default:
+				break;
+		}
 	});
 
 	// ⛔ Disconnection
