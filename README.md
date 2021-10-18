@@ -39,6 +39,8 @@
 
 ## WebRTC
 
+-   <img src="./docs/webrtc.png" width="70%">
+
 ## Todo
 
 -   React로 Client를 변경해보자
