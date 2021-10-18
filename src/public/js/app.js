@@ -1,54 +1,30 @@
 const $ = (query, base) => (!base ? document.querySelector(query) : base.querySelector(query));
 
-const $nickForm = $('#nick');
-const $messageForm = $('#message');
-const $messageList = $('ul');
+const socket = io();
 
-const socket = new WebSocket(`ws://${window.location.host}`);
+const $welcome = $('#welcome');
+const $form = $('form', $welcome);
+const $room = $('#room');
 
-socket.addEventListener('open', () => {
-	console.log('Conncted to Server ✅');
-});
+let roomName = '';
+$room.hidden = true;
 
-socket.addEventListener('message', message => {
-	const $li = document.createElement('li');
-	$li.innerText = message.data;
-	$messageList.append($li);
-});
+function showRoom() {
+	$welcome.hidden = true;
+	$room.hidden = false;
 
-socket.addEventListener('close', () => {
-	console.log('Disconncted to Server ⛔');
-});
-
-function makeMessage({ type, payload }) {
-	return JSON.stringify({ type, payload });
+	const $roomName = $('h3', $room);
+	$roomName.innerText = `Room: ${roomName}`;
 }
 
-function handleSubmit(e) {
+function handleRoomSubmit(e) {
 	e.preventDefault();
-	const $input = $('input', $messageForm);
-
-	socket.send(
-		makeMessage({
-			type: 'new_message',
-			payload: $input.value,
-		}),
-	);
-
+	const $input = $('input', $form);
+	// type, payload, [,args,callback]
+	// callBack 함수도 서버에게 전달할 수 있다.
+	socket.emit('enter_room', $input.value, showRoom);
+	roomName = $input.value;
 	$input.value = '';
 }
 
-function handleNickSubmit(e) {
-	e.preventDefault();
-	const $input = $('input', $nickForm);
-
-	socket.send(
-		makeMessage({
-			type: 'nickname',
-			payload: $input.value,
-		}),
-	);
-}
-
-$messageForm.addEventListener('submit', handleSubmit);
-$nickForm.addEventListener('submit', handleNickSubmit);
+$form.addEventListener('submit', handleRoomSubmit);
