@@ -36,3 +36,11 @@
     socket.join(roomName);
     console.log(socket.rooms); // {private room, roonName}
     ```
+
+## WebRTC
+
+## Todo
+
+-   React로 Client를 변경해보자
+-   `Data Channel`을 도입하여, Stream(비디오, 오디오) 뿐만 아니라 텍스트, 파일들을 전송해보자 (socket이 필요 없어진다..?)
+-   사용자가 브라우저를 종료할 때, Stream을 없애보자
