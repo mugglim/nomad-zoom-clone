@@ -4,12 +4,28 @@ const socket = io();
 const $myFace = $('#myFace');
 const $muteBtn = $('#mute');
 const $cameraBtn = $('#camera');
+const $selectCameara = $('select#cameras');
 
 let myStream;
 
 let muted = false;
 let cameraOff = false;
 
+async function getCameras() {
+	try {
+		const devices = await navigator.mediaDevices.enumerateDevices();
+		const camears = devices.filter(device => device.kind === 'videoinput');
+
+		camears.forEach(camera => {
+			const $option = document.createElement('option');
+			$option.value = camera.deviceId;
+			$option.innerText = camera.label;
+			$selectCameara.appendChild($option);
+		});
+	} catch (e) {
+		console.log(e);
+	}
+}
 async function getMedia() {
 	try {
 		myStream = await navigator.mediaDevices.getUserMedia({
@@ -17,6 +33,8 @@ async function getMedia() {
 			video: true,
 		});
 		$myFace.srcObject = myStream;
+
+		await getCameras();
 	} catch (e) {
 		console.log(e);
 	}
@@ -25,6 +43,8 @@ async function getMedia() {
 getMedia();
 
 function handlerMuteClick() {
+	myStream.getAudioTracks().forEach(track => (track.enabled = !track.enabled));
+
 	if (muted) {
 		$muteBtn.innerText = 'Unmute';
 		muted = false;
@@ -35,11 +55,13 @@ function handlerMuteClick() {
 }
 
 function handlerCameraClick() {
+	myStream.getVideoTracks().forEach(track => (track.enabled = !track.enabled));
+
 	if (cameraOff) {
-		$cameraBtn.innerText = 'Turn Camera On';
+		$cameraBtn.innerText = 'Turn Camera Off';
 		cameraOff = false;
 	} else {
-		$cameraBtn.innerText = 'Turn Camera Off';
+		$cameraBtn.innerText = 'Turn Camera On';
 		cameraOff = true;
 	}
 }
