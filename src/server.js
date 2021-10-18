@@ -27,6 +27,17 @@ wsServer.on('connection', socket => {
 	socket.on('enter_room', (roomName, done) => {
 		socket.join(roomName);
 		done();
+		socket.to(roomName).emit('welcome');
+	});
+
+	socket.on('new_message', (msg, roomName, done) => {
+		socket.to(roomName).emit('new_message', msg);
+		done();
+	});
+
+	// 클라이언트의 연결이 끊킬 때 감지할 수 있음.
+	socket.on('disconnecting', () => {
+		socket.rooms.forEach(roomId => socket.to(roomId).emit('exit_room'));
 	});
 });
 
