@@ -19,11 +19,17 @@ const server = http.createServer(app);
 // ws로 upgrade
 const wss = new WebSocket.Server({ server });
 
-function handleConnection(socket) {
-	console.log(socket);
-}
+wss.on('connection', socket => {
+	console.log('Conncted to Client ✅');
 
-wss.on('connection', handleConnection);
+	socket.send('Hello World :D');
+
+	socket.on('message', message => {
+		console.log(`From Clinet : ${message}`);
+	});
+
+	socket.on('close', () => console.log('Disconncted to Client ⛔'));
+});
 
 // http
 server.listen(3000, () => console.log('Listening on http://localhost:3000'));
