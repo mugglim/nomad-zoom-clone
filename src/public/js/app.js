@@ -7,10 +7,13 @@ const $cameraBtn = $('#camera');
 const $selectCameara = $('select#cameras');
 const $selectAudio = $('select#audios');
 
-let myStream;
+const $welcome = $('#welcome');
+const $call = $('#call');
 
+let myStream;
 let muted = false;
 let cameraOff = false;
+$call.hidden = true;
 
 async function getCameras() {
 	try {
@@ -67,8 +70,6 @@ async function getMedia(deviceId) {
 	}
 }
 
-getMedia();
-
 function handlerMuteClick() {
 	myStream.getAudioTracks().forEach(track => (track.enabled = !track.enabled));
 
@@ -100,3 +101,77 @@ async function handleAudioChange() {
 $muteBtn.addEventListener('click', handlerMuteClick);
 $cameraBtn.addEventListener('click', handlerCameraClick);
 $selectAudio.addEventListener('input', handleAudioChange);
+
+// Socket (Join a Room)
+const $welcomeForm = $('form', $welcome);
+let roomName;
+let myPeerConnection;
+
+async function initCall() {
+	$welcome.hidden = true;
+	$call.hidden = false;
+	await getMedia();
+	makeConnection();
+}
+
+async function handleWelcomeSubmit(e) {
+	e.preventDefault();
+	const $input = $('input', $welcomeForm);
+	await initCall();
+	socket.emit('join_room', $input.value);
+	roomName = $input.value;
+	$input.value = '';
+}
+
+$welcomeForm.addEventListener('submit', handleWelcomeSubmit);
+
+// Socket Event Code..
+socket.on('welcome', async () => {
+	const offer = await myPeerConnection.createOffer();
+	myPeerConnection.setLocalDescription(offer);
+	console.log('sent the offer');
+	socket.emit('offer', offer, roomName);
+});
+
+socket.on('offer', async offer => {
+	console.log('recived the offer');
+	// Peer B
+	myPeerConnection.setRemoteDescription(offer);
+	const answer = await myPeerConnection.createAnswer();
+	myPeerConnection.setLocalDescription(answer);
+	socket.emit('answer', answer, roomName);
+	console.log('sent the answer');
+});
+
+socket.on('answer', async answer => {
+	console.log('recived the answer');
+	// Peer A
+	myPeerConnection.setRemoteDescription(answer);
+});
+
+socket.on('ice', ice => {
+	console.log('recivied candidate');
+	myPeerConnection.addIceCandidate(ice);
+});
+
+// RTC Code...
+function makeConnection() {
+	// Connect by Peer to Perr
+	myPeerConnection = new RTCPeerConnection();
+	myPeerConnection.addEventListener('icecandidate', handleIce);
+	myPeerConnection.addEventListener('addstream', handleAddStream);
+	// Add Video and Audio data to Peer to Peer Connection
+	myStream.getTracks().forEach(track => myPeerConnection.addTrack(track, myStream));
+}
+
+// IceCandidate : WebRTC에서 데이터 통신을 위한 프로토콜(Peer To Peer 을 위한..)
+// candidate은 다른 Clinet의 브라우저로 전송되야 한다.
+function handleIce(data) {
+	console.log('sent candidate');
+	socket.emit('ice', data.candidate, roomName);
+}
+
+function handleAddStream(data) {
+	const $peerFace = $('#peerFace');
+	$peerFace.srcObject = data.stream;
+}
