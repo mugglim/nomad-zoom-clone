@@ -14,7 +14,6 @@ app.get('/', (req, res) => res.render('home'));
 app.get('/*', (req, res) => res.redirect('/'));
 
 // socket
-
 wsServer.on('connection', socket => {
 	socket.on('join_room', roomName => {
 		socket.join(roomName);

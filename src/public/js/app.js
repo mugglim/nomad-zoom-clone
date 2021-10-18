@@ -170,7 +170,22 @@ socket.on('ice', ice => {
 // RTC Code...
 function makeConnection() {
 	// Connect by Peer to Perr
-	myPeerConnection = new RTCPeerConnection();
+
+	// stun server : 동일 Network 환경이 아닌 경우, 서로의 공용 IP를 찾아 P2P 통신할 수 있도록 도와주는 서버
+	myPeerConnection = new RTCPeerConnection({
+		iceServers: [
+			{
+				urls: [
+					// 구글에서 제공하는 무료 stun 서버를 사용(테스트 용도임, 배포시 사용하면 위험)
+					'stun:stun.l.google.com:19302',
+					'stun:stun1.l.google.com:19302',
+					'stun:stun2.l.google.com:19302',
+					'stun:stun3.l.google.com:19302',
+					'stun:stun4.l.google.com:19302',
+				],
+			},
+		],
+	});
 	myPeerConnection.addEventListener('icecandidate', handleIce);
 	myPeerConnection.addEventListener('addstream', handleAddStream);
 	// Add Video and Audio data to Peer to Peer Connection
